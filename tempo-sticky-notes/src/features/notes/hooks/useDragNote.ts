@@ -4,8 +4,12 @@ import type { Note, Point } from '../model/note.types';
 import { clamp } from '../../../shared/utils/clamp';
 import { useWindowEvent } from '../../../features/notes/hooks/useWindowEvent';
 
-function getPointerPoint(e: PointerEvent | React.PointerEvent): Point {
-  return { x: e.clientX, y: e.clientY };
+function getCanvasPointerPoint(
+  e: PointerEvent | React.PointerEvent,
+  canvasEl: HTMLDivElement,
+): Point {
+  const rect = canvasEl.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }
 
 function add(a: Point, b: Point): Point {
@@ -30,86 +34,75 @@ export function useDragNote(params: {
   const latestPosRef = useRef<Point | null>(null);
   const draggingIdRef = useRef<string | null>(null);
 
-  const canvasBounds = useCallback(() => {
-    const el = canvasRef.current;
-    if (!el) return null;
-    return el.getBoundingClientRect();
-  }, [canvasRef]);
-
-  const clampToCanvas = useCallback(
-    (note: Note, pos: Point): Point => {
-      const bounds = canvasBounds();
-      if (!bounds) return pos;
-
-      // Convert viewport coordinates to canvas-local coordinates for clamping
-      // Note position is canvas-local (left/top)
-      const maxX = bounds.width - note.size.width;
-      const maxY = bounds.height - note.size.height;
-
-      return {
-        x: clamp(pos.x, 0, Math.max(0, maxX)),
-        y: clamp(pos.y, 0, Math.max(0, maxY)),
-      };
-    },
-    [canvasBounds],
-  );
-
   const onPointerDown = useCallback(
     (e: React.PointerEvent, note: Note) => {
-      // Only left button drag
       if (e.button !== 0) return;
+
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
 
       bringToFront(note.id);
 
-      const startPointer = getPointerPoint(e);
+      const startPointer = getCanvasPointerPoint(e, canvasEl);
+
+      // Read actual DOM left/top as the drag start (in case state lags behind)
+      const noteEl = e.currentTarget as HTMLElement;
+      const startLeft =
+        Number.parseFloat(noteEl.style.left || '') || note.position.x;
+      const startTop =
+        Number.parseFloat(noteEl.style.top || '') || note.position.y;
+
+      const startPosition = { x: startLeft, y: startTop };
+
+      // Ensure no leftover transform from older code
+      noteEl.style.transform = 'translate3d(0,0,0)';
+
       setSession({
         id: note.id,
         startPointer,
-        startPosition: note.position,
+        startPosition,
       });
 
       draggingIdRef.current = note.id;
 
-      // capture ensures we keep receiving events from this pointer while pressed
-      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      noteEl.setPointerCapture?.(e.pointerId);
     },
-    [bringToFront],
+    [bringToFront, canvasRef],
   );
 
   const onMove = useCallback(
     (ev: PointerEvent) => {
       if (!session) return;
 
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
+
       const noteEl = document.querySelector<HTMLElement>(`[data-note-id="${session.id}"]`);
       if (!noteEl) return;
 
-      const pointer = getPointerPoint(ev);
+      const pointer = getCanvasPointerPoint(ev, canvasEl);
       const delta = sub(pointer, session.startPointer);
       const rawPos = add(session.startPosition, delta);
 
-      // We need the note data to clamp; easiest: store width/height on dataset
-      const w = Number(noteEl.dataset.w || 0);
-      const h = Number(noteEl.dataset.h || 0);
-      const noteLike: Note = {
-        id: session.id,
-        position: session.startPosition,
-        size: { width: w, height: h },
-        content: '',
-        color: 'yellow',
-        zIndex: 1,
-        createdAt: 0,
-        updatedAt: 0,
+      // Use real element size (more reliable than dataset)
+      const w = noteEl.offsetWidth;
+      const h = noteEl.offsetHeight;
+
+      const maxX = canvasEl.clientWidth - w;
+      const maxY = canvasEl.clientHeight - h;
+
+      const nextPos: Point = {
+        x: clamp(rawPos.x, 0, Math.max(0, maxX)),
+        y: clamp(rawPos.y, 0, Math.max(0, maxY)),
       };
 
-      const nextPos = clampToCanvas(noteLike, rawPos);
       latestPosRef.current = nextPos;
 
-      // Visual move only (no React state spam)
-      noteEl.style.transform = `translate3d(${nextPos.x - session.startPosition.x}px, ${
-        nextPos.y - session.startPosition.y
-      }px, 0)`;
+      // Move with left/top directly (stable)
+      noteEl.style.left = `${nextPos.x}px`;
+      noteEl.style.top = `${nextPos.y}px`;
     },
-    [session, clampToCanvas],
+    [session, canvasRef],
   );
 
   const onUp = useCallback(() => {
@@ -117,10 +110,7 @@ export function useDragNote(params: {
 
     const finalPos = latestPosRef.current ?? session.startPosition;
 
-    // Clean visual transform
-    const noteEl = document.querySelector<HTMLElement>(`[data-note-id="${session.id}"]`);
-    if (noteEl) noteEl.style.transform = 'translate3d(0,0,0)';
-
+    // Persist to React state so it stays after re-render
     commitMove(session.id, finalPos);
 
     latestPosRef.current = null;
@@ -136,7 +126,8 @@ export function useDragNote(params: {
     () => ({
       draggingId: draggingIdRef.current,
       onPointerDown,
+      isDragging: !!session,
     }),
-    [onPointerDown],
+    [onPointerDown, session],
   );
 }

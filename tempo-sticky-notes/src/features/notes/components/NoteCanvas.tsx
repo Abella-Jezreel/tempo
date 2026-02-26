@@ -8,7 +8,7 @@ export function NoteCanvas() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const { notes, send } = useNotes();
 
-  const { onPointerDown } = useDragNote({
+  const { onPointerDown, draggingId } = useDragNote({
     canvasRef,
     bringToFront: (id) => send({ type: 'BRING_TO_FRONT', payload: { id } }),
     commitMove: (id, position) => send({ type: 'MOVE_NOTE', payload: { id, position } }),
@@ -32,15 +32,26 @@ export function NoteCanvas() {
         height: '100%',
         width: '100%',
         position: 'relative',
-        overflow: 'hidden',
       }}
     >
       <button
         onClick={createNote}
-        style={{ position: 'absolute', top: 16, left: 16, zIndex: 9999 }}
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: '47%',
+          zIndex: 999999,
+          pointerEvents: 'auto',
+          padding: '10px 12px',
+          background: '#1f1f1f',
+          borderRadius: 8,
+        }}
       >
         + Add Note
       </button>
+      <div style={{ position: 'absolute', bottom: 29, left: '48%', zIndex: 9999, color: '#1f1f1f' }}>
+        Notes: {notes.length}
+      </div>
 
       {notes.map((note) => (
         <Note
@@ -48,6 +59,7 @@ export function NoteCanvas() {
           note={note}
           onPointerDown={onPointerDown}
           onFocus={(id) => send({ type: 'BRING_TO_FRONT', payload: { id } })}
+          isDragging={draggingId === note.id}
         />
       ))}
     </div>
