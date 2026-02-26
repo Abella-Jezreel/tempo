@@ -64,10 +64,7 @@ Make sure you have Node.js (v18 or higher) installed.
 The app will be available at:
 
 http://localhost:5173
-Build for production
-1. npm run build
-Preview production build
-1. npm run preview
+
 🛠 Tech Stack
 
 1. React
