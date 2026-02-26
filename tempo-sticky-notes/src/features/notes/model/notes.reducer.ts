@@ -65,10 +65,26 @@ export function notesReducer(state: NotesState, action: NotesAction): NotesState
       };
     }
 
+    case 'UPDATE_NOTE_CONTENT': {
+      const t = now();
+      return {
+        ...state,
+        notes: withUpdatedNote(state.notes, action.payload.id, (n) => ({
+          ...n,
+          content: action.payload.content,
+          updatedAt: t,
+        })),
+      };
+    }
+
     case 'RESIZE_NOTE': {
       const t = now();
       const width = clamp(action.payload.size.width, NOTE_MIN_SIZE.width, Number.MAX_SAFE_INTEGER);
-      const height = clamp(action.payload.size.height, NOTE_MIN_SIZE.height, Number.MAX_SAFE_INTEGER);
+      const height = clamp(
+        action.payload.size.height,
+        NOTE_MIN_SIZE.height,
+        Number.MAX_SAFE_INTEGER,
+      );
 
       return {
         ...state,

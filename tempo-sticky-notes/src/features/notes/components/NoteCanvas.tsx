@@ -49,7 +49,9 @@ export function NoteCanvas() {
       >
         + Add Note
       </button>
-      <div style={{ position: 'absolute', bottom: 29, left: '48%', zIndex: 9999, color: '#1f1f1f' }}>
+      <div
+        style={{ position: 'absolute', bottom: 29, left: '48%', zIndex: 9999, color: '#1f1f1f' }}
+      >
         Notes: {notes.length}
       </div>
 
@@ -57,9 +59,12 @@ export function NoteCanvas() {
         <Note
           key={note.id}
           note={note}
+          isDragging={draggingId === note.id}
           onPointerDown={onPointerDown}
           onFocus={(id) => send({ type: 'BRING_TO_FRONT', payload: { id } })}
-          isDragging={draggingId === note.id}
+          onChangeContent={(id, content) =>
+            send({ type: 'UPDATE_NOTE_CONTENT', payload: { id, content } })
+          }
         />
       ))}
     </div>
