@@ -1,14 +1,19 @@
-import type { Note } from '../model/note.types';
+import type { Note as NoteType } from '../model/note.types';
 
 interface Props {
-  note: Note;
-  onClick: (id: string) => void;
+  note: NoteType;
+  onPointerDown: (e: React.PointerEvent, note: NoteType) => void;
+  onFocus: (id: string) => void;
 }
 
-export function Note({ note, onClick }: Props) {
+export function Note({ note, onPointerDown, onFocus }: Props) {
   return (
     <div
-      onMouseDown={() => onClick(note.id)}
+      data-note-id={note.id}
+      data-w={note.size.width}
+      data-h={note.size.height}
+      onMouseDown={() => onFocus(note.id)}
+      onPointerDown={(e) => onPointerDown(e, note)}
       style={{
         position: 'absolute',
         left: note.position.x,
@@ -20,8 +25,10 @@ export function Note({ note, onClick }: Props) {
         padding: 12,
         borderRadius: 6,
         boxShadow: '0 6px 12px rgba(0,0,0,0.15)',
-        cursor: 'pointer',
+        cursor: 'grab',
         userSelect: 'none',
+        touchAction: 'none', // important for pointer events
+        willChange: 'transform',
       }}
     >
       {note.content || 'Empty note'}

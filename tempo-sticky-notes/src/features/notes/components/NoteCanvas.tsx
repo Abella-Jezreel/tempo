@@ -1,9 +1,18 @@
+import { useRef } from 'react';
 import { useNotes } from '../hooks/useNotes';
 import { Note } from './Note';
 import { NOTE_DEFAULT_SIZE } from '../model/note.constants';
+import { useDragNote } from '../hooks/useDragNote';
 
 export function NoteCanvas() {
+  const canvasRef = useRef<HTMLDivElement | null>(null);
   const { notes, send } = useNotes();
+
+  const { onPointerDown } = useDragNote({
+    canvasRef,
+    bringToFront: (id) => send({ type: 'BRING_TO_FRONT', payload: { id } }),
+    commitMove: (id, position) => send({ type: 'MOVE_NOTE', payload: { id, position } }),
+  });
 
   const createNote = () => {
     send({
@@ -18,6 +27,7 @@ export function NoteCanvas() {
 
   return (
     <div
+      ref={canvasRef}
       style={{
         height: '100%',
         width: '100%',
@@ -27,12 +37,7 @@ export function NoteCanvas() {
     >
       <button
         onClick={createNote}
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          zIndex: 9999,
-        }}
+        style={{ position: 'absolute', top: 16, left: 16, zIndex: 9999 }}
       >
         + Add Note
       </button>
@@ -41,12 +46,8 @@ export function NoteCanvas() {
         <Note
           key={note.id}
           note={note}
-          onClick={(id) =>
-            send({
-              type: 'BRING_TO_FRONT',
-              payload: { id },
-            })
-          }
+          onPointerDown={onPointerDown}
+          onFocus={(id) => send({ type: 'BRING_TO_FRONT', payload: { id } })}
         />
       ))}
     </div>
