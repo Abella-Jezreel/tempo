@@ -52,9 +52,9 @@ Small pure utilities are unit tested with Vitest (e.g. clamp, math helpers). The
 
 🚀 Getting Started
 Clone the repository
-git clone https://github.com/Abella-Jezreel/tempo.git
-cd tempo-sticky-notes
-Install dependencies
+1. git clone https://github.com/Abella-Jezreel/tempo.git
+2. cd tempo-sticky-notes
+3. Install dependencies
 
 Make sure you have Node.js (v18 or higher) installed.
 
