@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+Architecture
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a small “sticky notes board” built with React + TypeScript and organized using a feature-first structure. The goal is to keep UI concerns separated from interaction logic (drag/resize/edit) and from state management (note domain + reducer), so the code stays easy to extend and reason about as features grow.
 
-Currently, two official plugins are available:
+Folder structure (feature-first)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+src/features/notes/ – everything related to the Notes domain
 
-## React Compiler
+components/ – presentational UI (NoteCanvas, Note, TrashZone)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+hooks/ – interaction and orchestration logic (useNotes, useDragNote, useResizeNote, useWindowEvent)
 
-## Expanding the ESLint configuration
+model/ – domain types and reducer (note.types, actions, constants, reducer, colors)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+persistence/ – localStorage persistence (notesStorage.ts)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+src/shared/ – small reusable utilities/tests (e.g. clamp)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+State management
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Notes are managed with a reducer (notes.reducer.ts) to keep updates predictable and testable. The reducer owns the single source of truth for:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+notes[] (position, size, content, color, zIndex, timestamps)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+nextZIndex (used for “bring to front” behavior)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+UI components dispatch domain actions (e.g. CREATE_NOTE, MOVE_NOTE, RESIZE_NOTE, DELETE_NOTE) rather than mutating state directly.
+
+Interaction architecture (drag / resize)
+
+Drag and resize are implemented with pointer events and isolated into hooks:
+
+useDragNote handles pointer capture, live movement during drag, clamping to canvas bounds, and committing the final position on pointer up.
+
+useResizeNote handles resize sessions, live DOM resize for responsiveness, and commits final size on pointer up.
+
+During interactions, DOM updates are used for smooth visuals, and the reducer is only updated on “commit” (pointer up), preventing excessive React re-renders.
+
+Persistence
+
+Board state is persisted to localStorage using a versioned key (e.g. tempo-sticky-notes:v1).
+
+On startup: state is hydrated via a lazy reducer initializer (loadNotesState() ?? initialNotesState)
+
+On state change: state is saved in an effect (saveNotesState(state))
+
+Persistence logic is kept in features/notes/persistence/ to keep storage concerns out of UI and reducer code.
+
+Testing
+
+Small pure utilities are unit tested with Vitest (e.g. clamp, math helpers). The reducer and/or domain logic can be tested similarly as the project grows.
