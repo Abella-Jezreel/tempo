@@ -52,7 +52,7 @@ Small pure utilities are unit tested with Vitest (e.g. clamp, math helpers). The
 
 🚀 Getting Started
 Clone the repository
-git clone https://github.com/YOUR_USERNAME/tempo-sticky-notes.git
+git clone https://github.com/Abella-Jezreel/tempo.git
 cd tempo-sticky-notes
 Install dependencies
 
