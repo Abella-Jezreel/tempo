@@ -52,17 +52,81 @@ export function NoteCanvas() {
           left: '47%',
           zIndex: 999999,
           pointerEvents: 'auto',
-          padding: '10px 12px',
-          background: '#1f1f1f',
-          borderRadius: 8,
+
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+
+          padding: '12px 18px',
+          borderRadius: 14,
+          border: 'none',
+
+          background: 'linear-gradient(135deg, #1f1f1f, #2a2a2a)',
+          color: '#fff',
+          fontSize: 14,
+          fontWeight: 600,
+
+          boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
+          cursor: 'pointer',
+
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.35)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0px)';
+          e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.25)';
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = 'translateY(1px)';
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
         }}
       >
-        + Add Note
+        <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
+        Add Note
       </button>
       <div
-        style={{ position: 'absolute', bottom: 29, left: '48%', zIndex: 9999, color: '#1f1f1f' }}
+        style={{
+          position: 'absolute',
+          bottom: 29,
+          left: '47%',
+          zIndex: 9999,
+
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+
+          padding: '8px 14px',
+          borderRadius: 999,
+
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(6px)',
+
+          fontSize: 14,
+          fontWeight: 500,
+          color: '#333',
+
+          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+        }}
       >
-        Notes: {notes.length}
+        <span style={{ opacity: 0.6 }}>Notes</span>
+        <span
+          style={{
+            background: '#1f1f1f',
+            color: '#fff',
+            fontWeight: 600,
+            padding: '3px 10px',
+            borderRadius: 999,
+            minWidth: 24,
+            textAlign: 'center',
+          }}
+        >
+          {notes.length}
+        </span>
       </div>
       <TrashZone ref={trashRef} active={!!draggingId && isOverTrash} />
       {notes.map((note) => (
