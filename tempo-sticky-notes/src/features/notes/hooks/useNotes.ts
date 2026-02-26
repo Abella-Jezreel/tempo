@@ -1,6 +1,6 @@
 import { useReducer } from 'react';
-import { initialNotesState, notesReducer } from '../model/notes.reducer';
-import type { NotesAction } from '../model/note.actions';
+import { initialNotesState, notesReducer } from '../../../features/notes/model/notes.reducer';
+import type { NotesAction } from '../../../features/notes/model/note.actions';
 
 export function useNotes() {
   const [state, dispatch] = useReducer(notesReducer, initialNotesState);

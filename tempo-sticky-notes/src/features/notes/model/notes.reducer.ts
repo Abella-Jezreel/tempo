@@ -65,6 +65,18 @@ export function notesReducer(state: NotesState, action: NotesAction): NotesState
       };
     }
 
+    case 'RESIZE_NOTE': {
+      const t = now();
+      return {
+        ...state,
+        notes: withUpdatedNote(state.notes, action.payload.id, (n) => ({
+          ...n,
+          size: action.payload.size,
+          updatedAt: t,
+        })),
+      };
+    }
+
     case 'UPDATE_NOTE_CONTENT': {
       const t = now();
       return {

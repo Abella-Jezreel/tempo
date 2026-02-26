@@ -6,6 +6,7 @@ export type NotesAction =
   | { type: 'RESIZE_NOTE'; payload: { id: NoteId; size: Size } }
   | { type: 'REMOVE_NOTE'; payload: { id: NoteId } }
   | { type: 'UPDATE_NOTE_CONTENT'; payload: { id: string; content: string } }
+  | { type: 'RESIZE_NOTE'; payload: { id: string; size: { width: number; height: number } } }
   | { type: 'BRING_TO_FRONT'; payload: { id: NoteId } }
   | { type: 'UPDATE_TEXT'; payload: { id: NoteId; content: string } }
   | { type: 'UPDATE_COLOR'; payload: { id: NoteId; color: NoteColor } }

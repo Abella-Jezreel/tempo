@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { DragSession } from '../model/interaction.types';
-import type { Note, Point } from '../model/note.types';
+import type { DragSession } from '../../../features/notes/model/interaction.types';
+import type { Note, Point } from '../../../features/notes/model/note.types';
 import { clamp } from '../../../shared/utils/clamp';
-import { useWindowEvent } from '../../../features/notes/hooks/useWindowEvent';
+import { useWindowEvent } from './useWindowEvent';
 
 function getCanvasPointerPoint(
   e: PointerEvent | React.PointerEvent,

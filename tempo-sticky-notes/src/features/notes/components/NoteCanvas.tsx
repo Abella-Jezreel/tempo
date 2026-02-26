@@ -1,8 +1,9 @@
 import { useRef } from 'react';
-import { useNotes } from '../hooks/useNotes';
+import { useNotes } from '../../../features/notes/hooks/useNotes';
 import { Note } from './Note';
 import { NOTE_DEFAULT_SIZE } from '../model/note.constants';
-import { useDragNote } from '../hooks/useDragNote';
+import { useDragNote } from '../../../features/notes/hooks/useDragNote';
+import { useResizeNote } from '../hooks/useResizeNote';
 
 export function NoteCanvas() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -12,6 +13,11 @@ export function NoteCanvas() {
     canvasRef,
     bringToFront: (id) => send({ type: 'BRING_TO_FRONT', payload: { id } }),
     commitMove: (id, position) => send({ type: 'MOVE_NOTE', payload: { id, position } }),
+  });
+
+  const { onResizePointerDown } = useResizeNote({
+    canvasRef,
+    commitResize: (id, size) => send({ type: 'RESIZE_NOTE', payload: { id, size } }),
   });
 
   const createNote = () => {
@@ -65,6 +71,7 @@ export function NoteCanvas() {
           onChangeContent={(id, content) =>
             send({ type: 'UPDATE_NOTE_CONTENT', payload: { id, content } })
           }
+          onResizePointerDown={onResizePointerDown}
         />
       ))}
     </div>
