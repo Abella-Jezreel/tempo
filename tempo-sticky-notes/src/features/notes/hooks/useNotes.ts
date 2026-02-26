@@ -1,13 +1,25 @@
-import { useReducer } from 'react';
-import { initialNotesState, notesReducer } from '../../../features/notes/model/notes.reducer';
-import type { NotesAction } from '../../../features/notes/model/note.actions';
+import { useEffect, useReducer } from 'react';
+import {
+  notesReducer,
+  initialNotesState,
+} from '../model/notes.reducer';
+import { NotesState } from '../model/note.types';
+import { loadNotesState, saveNotesState } from '../persistence/notesStorage';
+
+function init(): NotesState {
+  return loadNotesState() ?? initialNotesState;
+}
 
 export function useNotes() {
-  const [state, dispatch] = useReducer(notesReducer, initialNotesState);
+  const [state, send] = useReducer(notesReducer, undefined as unknown as NotesState, init);
+
+  useEffect(() => {
+    saveNotesState(state);
+  }, [state]);
 
   return {
     notes: state.notes,
     nextZIndex: state.nextZIndex,
-    send: dispatch as React.Dispatch<NotesAction>,
+    send,
   };
 }
