@@ -49,3 +49,42 @@ Persistence logic is kept in features/notes/persistence/ to keep storage concern
 Testing
 
 Small pure utilities are unit tested with Vitest (e.g. clamp, math helpers). The reducer and/or domain logic can be tested similarly as the project grows.
+
+🚀 Getting Started
+Clone the repository
+git clone https://github.com/YOUR_USERNAME/tempo-sticky-notes.git
+cd tempo-sticky-notes
+Install dependencies
+
+Make sure you have Node.js (v18 or higher) installed.
+
+npm install
+Run the development server
+npm run dev
+
+The app will be available at:
+
+http://localhost:5173
+Build for production
+npm run build
+Preview production build
+npm run preview
+🛠 Tech Stack
+
+React
+
+TypeScript
+
+Vite
+
+LocalStorage persistence
+
+Custom drag & resize hooks (Pointer Events API)
+
+💾 Data Persistence
+
+All notes are persisted in:
+
+localStorage → tempo-sticky-notes:v1
+
+Refreshing the page restores the board state automatically.
