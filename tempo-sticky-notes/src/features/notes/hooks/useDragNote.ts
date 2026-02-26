@@ -27,12 +27,24 @@ export function useDragNote(params: {
   canvasRef: React.RefObject<HTMLDivElement | null>;
   commitMove: CommitMove;
   bringToFront: BringToFront;
+  trashRef: React.RefObject<HTMLDivElement | null>;
+  dropTrash: (id: string) => void;
 }) {
-  const { canvasRef, commitMove, bringToFront } = params;
+  const { canvasRef, commitMove, bringToFront, trashRef, dropTrash } = params;
 
   const [session, setSession] = useState<DragSession | null>(null);
   const latestPosRef = useRef<Point | null>(null);
   const draggingIdRef = useRef<string | null>(null);
+
+  function hitTestTrash(trashEl: HTMLDivElement, ev: PointerEvent) {
+    const r = trashEl.getBoundingClientRect();
+    return (
+      ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom
+    );
+  }
+
+  const [isOverTrash, setIsOverTrash] = useState(false);
+  const lastPointerEventRef = useRef<PointerEvent | null>(null);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent, note: Note) => {
@@ -47,10 +59,8 @@ export function useDragNote(params: {
 
       // Read actual DOM left/top as the drag start (in case state lags behind)
       const noteEl = e.currentTarget as HTMLElement;
-      const startLeft =
-        Number.parseFloat(noteEl.style.left || '') || note.position.x;
-      const startTop =
-        Number.parseFloat(noteEl.style.top || '') || note.position.y;
+      const startLeft = Number.parseFloat(noteEl.style.left || '') || note.position.x;
+      const startTop = Number.parseFloat(noteEl.style.top || '') || note.position.y;
 
       const startPosition = { x: startLeft, y: startTop };
 
@@ -80,6 +90,11 @@ export function useDragNote(params: {
       const noteEl = document.querySelector<HTMLElement>(`[data-note-id="${session.id}"]`);
       if (!noteEl) return;
 
+      lastPointerEventRef.current = ev;
+
+      const trashEl = trashRef.current;
+      if (trashEl) setIsOverTrash(hitTestTrash(trashEl, ev));
+
       const pointer = getCanvasPointerPoint(ev, canvasEl);
       const delta = sub(pointer, session.startPointer);
       const rawPos = add(session.startPosition, delta);
@@ -108,15 +123,24 @@ export function useDragNote(params: {
   const onUp = useCallback(() => {
     if (!session) return;
 
-    const finalPos = latestPosRef.current ?? session.startPosition;
+    const ev = lastPointerEventRef.current;
+    const trashEl = trashRef.current;
 
-    // Persist to React state so it stays after re-render
-    commitMove(session.id, finalPos);
+    const droppedOnTrash = !!(ev && trashEl && hitTestTrash(trashEl, ev));
 
+    if (droppedOnTrash) {
+      dropTrash(session.id);
+    } else {
+      const finalPos = latestPosRef.current ?? session.startPosition;
+      commitMove(session.id, finalPos);
+    }
+
+    setIsOverTrash(false);
+    lastPointerEventRef.current = null;
     latestPosRef.current = null;
     draggingIdRef.current = null;
     setSession(null);
-  }, [session, commitMove]);
+  }, [session, commitMove, dropTrash, trashRef]);
 
   useWindowEvent('pointermove', onMove, !!session);
   useWindowEvent('pointerup', onUp, !!session);
@@ -125,9 +149,9 @@ export function useDragNote(params: {
   return useMemo(
     () => ({
       draggingId: draggingIdRef.current,
+      isOverTrash,
       onPointerDown,
-      isDragging: !!session,
     }),
-    [onPointerDown, session],
+    [onPointerDown, isOverTrash],
   );
 }

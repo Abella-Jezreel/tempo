@@ -10,4 +10,5 @@ export type NotesAction =
   | { type: 'BRING_TO_FRONT'; payload: { id: NoteId } }
   | { type: 'UPDATE_TEXT'; payload: { id: NoteId; content: string } }
   | { type: 'UPDATE_COLOR'; payload: { id: NoteId; color: NoteColor } }
+  | { type: 'DELETE_NOTE'; payload: { id: string } }
   | { type: 'HYDRATE'; payload: { notes: import('./note.types').Note[] } };

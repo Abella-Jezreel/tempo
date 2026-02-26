@@ -1,18 +1,22 @@
 import { useRef } from 'react';
 import { useNotes } from '../../../features/notes/hooks/useNotes';
 import { Note } from './Note';
+import { TrashZone } from './TrashZone';
 import { NOTE_DEFAULT_SIZE } from '../model/note.constants';
 import { useDragNote } from '../../../features/notes/hooks/useDragNote';
 import { useResizeNote } from '../hooks/useResizeNote';
 
 export function NoteCanvas() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const trashRef = useRef<HTMLDivElement | null>(null);
   const { notes, send } = useNotes();
 
-  const { onPointerDown, draggingId } = useDragNote({
+  const { onPointerDown, isOverTrash, draggingId } = useDragNote({
     canvasRef,
+    trashRef,
     bringToFront: (id) => send({ type: 'BRING_TO_FRONT', payload: { id } }),
     commitMove: (id, position) => send({ type: 'MOVE_NOTE', payload: { id, position } }),
+    dropTrash: (id) => send({ type: 'DELETE_NOTE', payload: { id } }),
   });
 
   const { onResizePointerDown } = useResizeNote({
@@ -60,7 +64,7 @@ export function NoteCanvas() {
       >
         Notes: {notes.length}
       </div>
-
+      <TrashZone ref={trashRef} active={!!draggingId && isOverTrash} />
       {notes.map((note) => (
         <Note
           key={note.id}

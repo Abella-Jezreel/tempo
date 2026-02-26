@@ -65,6 +65,13 @@ export function notesReducer(state: NotesState, action: NotesAction): NotesState
       };
     }
 
+    case 'DELETE_NOTE': {
+      return {
+        ...state,
+        notes: state.notes.filter((n) => n.id !== action.payload.id),
+      };
+    }
+
     case 'RESIZE_NOTE': {
       const t = now();
       return {
