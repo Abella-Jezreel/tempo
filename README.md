@@ -58,26 +58,23 @@ Clone the repository
 
 Make sure you have Node.js (v18 or higher) installed.
 
-npm install
+1. npm install
 Run the development server
-npm run dev
+1. npm run dev
 
 The app will be available at:
 
 http://localhost:5173
 Build for production
-npm run build
+1. npm run build
 Preview production build
-npm run preview
+1. npm run preview
 🛠 Tech Stack
 
-React
-
-TypeScript
-
-Vite
-
-LocalStorage persistence
+1. React
+2. TypeScript
+3. Vite
+4. LocalStorage persistence
 
 Custom drag & resize hooks (Pointer Events API)
 
