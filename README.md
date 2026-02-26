@@ -59,8 +59,7 @@ Clone the repository
 Make sure you have Node.js (v18 or higher) installed.
 
 1. npm install
-Run the development server
-1. npm run dev
+2. npm run dev
 
 The app will be available at:
 
